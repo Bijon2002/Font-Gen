@@ -12,8 +12,13 @@ def build_ttf(cells: dict[str, object], family: str, output: str) -> None:
     glyphs = {}
     metrics = {".notdef": (600, 0), "space": (350, 0)}
 
-    empty_pen = TTGlyphPen(None)
-    glyphs[".notdef"] = empty_pen.glyph()
+    notdef_pen = TTGlyphPen(None)
+    notdef_pen.moveTo((80, 0))
+    notdef_pen.lineTo((520, 0))
+    notdef_pen.lineTo((520, 700))
+    notdef_pen.lineTo((80, 700))
+    notdef_pen.closePath()
+    glyphs[".notdef"] = notdef_pen.glyph()
     glyphs["space"] = TTGlyphPen(None).glyph()
     for character in CHARS:
         bitmap = cells.get(character)
@@ -32,12 +37,17 @@ def build_ttf(cells: dict[str, object], family: str, output: str) -> None:
                     pen.lineTo((int(point[0] * 1000 / CELL), int((CELL - point[1]) * 1000 / CELL)))
                 pen.closePath()
         glyphs[character] = pen.glyph()
-        metrics[character] = (650, 0)
+        metrics[character] = (1000 + len(metrics), 0)
 
     builder.setupGlyf(glyphs)
-    builder.setupHead(unitsPerEm=1000, flags=0x000B)
+    builder.setupHead(unitsPerEm=1000, flags=0x0003)
     builder.setupHorizontalMetrics(metrics)
-    builder.setupHorizontalHeader(ascent=800, descent=-200)
+    builder.setupHorizontalHeader(
+        ascent=800,
+        descent=-200,
+        lineGap=0,
+        numberOfHMetrics=len(metrics),
+    )
     builder.setupNameTable(
         {
             "familyName": family,
@@ -47,7 +57,8 @@ def build_ttf(cells: dict[str, object], family: str, output: str) -> None:
         }
     )
     builder.setupOS2(
-        version=4,
+        version=3,
+        fsType=0,
         usWeightClass=400,
         usWidthClass=5,
         fsSelection=0x40,
@@ -56,9 +67,22 @@ def build_ttf(cells: dict[str, object], family: str, output: str) -> None:
         usWinAscent=800,
         usWinDescent=200,
     )
-    builder.setupPost(formatType=3.0)
+    builder.setupPost(formatType=2.0)
     builder.save(output)
-    font = TTFont(output)
+    font = TTFont(output, recalcBBoxes=True, recalcTimestamp=False)
+    font.flavor = None
+    font["OS/2"].fsType = 0
+    font["head"].flags = 0x000B
+    font["OS/2"].achVendID = "FONT"
+    font["hhea"].numberOfHMetrics = len(font["hmtx"].metrics)
     font.recalcBBoxes = True
     font.recalcTimestamp = False
     font.save(output)
+    validated = TTFont(output, checkChecksums=1)
+    validated["hhea"].numberOfHMetrics = len(validated["hmtx"].metrics)
+    validated.recalcBBoxes = False
+    validated.recalcTimestamp = False
+    validated.save(output)
+    validated = TTFont(output, checkChecksums=1)
+    if len(validated.getBestCmap()) != len(cells):
+        raise ValueError("The generated font failed validation. Please try again.")

@@ -57,11 +57,19 @@ def generate(
             cells = cells_from_ai(data)
         else:
             cells = extract_cells(image)
-        output = os.path.join(tempfile.gettempdir(), f"{family.replace(' ', '_')}.ttf")
+        output = os.path.join(
+            tempfile.gettempdir(),
+            f"{family.replace(' ', '_')}_{os.urandom(8).hex()}.ttf",
+        )
         build_ttf(cells, family, output)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
-    return FileResponse(output, media_type="font/ttf", filename=f"{family.replace(' ', '_')}.ttf")
+    return FileResponse(
+        output,
+        media_type="font/ttf",
+        filename=f"{family.replace(' ', '_')}.ttf",
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.post("/cutout")

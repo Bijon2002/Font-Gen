@@ -1,5 +1,7 @@
 # FontGen
 
+> **Project under construction:** FontGen is actively being developed. Some features, including font generation compatibility and AI-assisted style matching, may change or require further testing.
+
 FontGen turns handwriting templates and title images into installable TTF files. It also exports a transparent PNG cutout for compositing 3D title artwork in CapCut.
 
 ## Preview
