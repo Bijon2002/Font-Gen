@@ -1,0 +1,12 @@
+:root { font-family: system-ui, sans-serif; color: #18212b; background: #f5f7fb; }
+body { margin: 0; }
+main { max-width: 720px; margin: 48px auto; padding: 32px; background: white; border-radius: 16px; box-shadow: 0 8px 32px #1b2b4014; }
+h1 { margin-top: 0; }
+label { display: grid; gap: 6px; margin: 20px 0; font-weight: 600; }
+input, select, button { font: inherit; padding: 10px; border: 1px solid #c7d0dc; border-radius: 8px; }
+button { cursor: pointer; background: #1d5fd1; color: white; border: 0; }
+button:disabled { opacity: .6; cursor: wait; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+canvas { width: 100%; max-height: 360px; object-fit: contain; cursor: crosshair; border: 1px solid #c7d0dc; border-radius: 8px; }
+.swatch { display: inline-block; padding: 4px 12px; border-radius: 12px; color: #111; }
+.error { color: #b42318; white-space: pre-wrap; }
