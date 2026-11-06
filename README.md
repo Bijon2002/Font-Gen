@@ -2,6 +2,23 @@
 
 FontGen turns handwriting templates and title images into installable TTF files. It also exports a transparent PNG cutout for compositing 3D title artwork in CapCut.
 
+## Preview
+
+### Landing page
+
+![FontGen landing page](<Screenshot 2026-11-06 171748.png>)
+
+### Font creator
+
+![FontGen creator interface](image.png)
+
+## Features
+
+- Generate a font from a handwritten template.
+- Match a title image style and export a TTF.
+- Export title artwork as a transparent PNG.
+- Run locally so uploaded images stay on your machine.
+
 ## Run locally
 
 ### Backend
@@ -22,4 +39,8 @@ npm install
 npm run dev
 ```
 
-Set `VITE_API` when the backend is not running on `http://localhost:8000`.
+Set `VITE_API` when the backend is not running on `http://127.0.0.1:8000`.
+
+---
+
+<p align="center">Developed by <strong>Bijon</strong></p>

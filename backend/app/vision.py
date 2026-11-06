@@ -24,15 +24,45 @@ def _normalize_cell(cell: np.ndarray) -> np.ndarray:
 
 def extract_cells(image: np.ndarray) -> dict[str, np.ndarray]:
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    threshold = cv2.threshold(gray, 190, 255, cv2.THRESH_BINARY_INV)[1]
+    threshold = cv2.adaptiveThreshold(
+        gray,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV,
+        31,
+        11,
+    )
     contours, _ = cv2.findContours(threshold, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     boxes = []
+    minimum_size = max(8, int(min(image.shape[:2]) * 0.012))
     for contour in contours:
         x, y, width, height = cv2.boundingRect(contour)
-        if 20 <= width <= image.shape[1] / 3 and 20 <= height <= image.shape[0] / 3:
+        ratio = width / max(height, 1)
+        if (
+            minimum_size <= width <= image.shape[1] / 3
+            and minimum_size <= height <= image.shape[0] / 3
+            and 0.55 <= ratio <= 1.8
+        ):
             boxes.append((x, y, width, height))
+    boxes.sort(key=lambda box: box[2] * box[3], reverse=True)
+    selected = []
+    for box in boxes:
+        x, y, width, height = box
+        if any(
+            x < other_x + other_width * 0.8
+            and x + width > other_x + other_width * 0.2
+            and y < other_y + other_height * 0.8
+            and y + height > other_y + other_height * 0.2
+            for other_x, other_y, other_width, other_height in selected
+        ):
+            continue
+        selected.append(box)
+    boxes = selected
     if len(boxes) < len(CHARS):
-        raise ValueError(f"Could not find all {len(CHARS)} template cells in the image.")
+        raise ValueError(
+            f"Could not find all {len(CHARS)} template cells in the image. "
+            "Use a clear photo of the complete handwriting template."
+        )
     boxes.sort(key=lambda box: (box[1] // max(box[3], 1), box[0]))
     cells: dict[str, np.ndarray] = {}
     for character, (x, y, width, height) in zip(CHARS, boxes[: len(CHARS)]):

@@ -20,8 +20,10 @@ def face_mask(image: np.ndarray, hex_color: str, tol: int = 18) -> np.ndarray:
 
 def split_letters(mask: np.ndarray) -> list[np.ndarray]:
     count, labels, stats, _ = cv2.connectedComponentsWithStats(mask)
-    ids = [i for i in range(1, count) if stats[i, cv2.CC_STAT_AREA] > 0.002 * mask.size]
-    ids.sort(key=lambda i: stats[i, cv2.CC_STAT_X])
+    area_column = 4
+    x_column = 0
+    ids = [i for i in range(1, count) if stats[i, area_column] > 0.002 * mask.size]
+    ids.sort(key=lambda i: stats[i, x_column])
     return [(labels == i).astype(np.uint8) * 255 for i in ids]
 
 

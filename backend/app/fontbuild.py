@@ -1,5 +1,6 @@
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
+from fontTools.ttLib import TTFont
 
 from .config import CELL, CHARS
 
@@ -34,9 +35,30 @@ def build_ttf(cells: dict[str, object], family: str, output: str) -> None:
         metrics[character] = (650, 0)
 
     builder.setupGlyf(glyphs)
+    builder.setupHead(unitsPerEm=1000, flags=0x000B)
     builder.setupHorizontalMetrics(metrics)
     builder.setupHorizontalHeader(ascent=800, descent=-200)
-    builder.setupNameTable({"familyName": family, "styleName": "Regular", "fullName": f"{family} Regular"})
-    builder.setupOS2(sTypoAscender=800, sTypoDescender=-200, usWinAscent=800, usWinDescent=200)
-    builder.setupPost()
+    builder.setupNameTable(
+        {
+            "familyName": family,
+            "styleName": "Regular",
+            "fullName": f"{family} Regular",
+            "psName": family.replace(" ", "") + "-Regular",
+        }
+    )
+    builder.setupOS2(
+        version=4,
+        usWeightClass=400,
+        usWidthClass=5,
+        fsSelection=0x40,
+        sTypoAscender=800,
+        sTypoDescender=-200,
+        usWinAscent=800,
+        usWinDescent=200,
+    )
+    builder.setupPost(formatType=3.0)
     builder.save(output)
+    font = TTFont(output)
+    font.recalcBBoxes = True
+    font.recalcTimestamp = False
+    font.save(output)
